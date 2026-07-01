@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Expense Diary">
+<meta name="theme-color" content="#164F3A">
+<title>Budgets · Jomin and Malu Expense Diary</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231E6B4E'/%3E%3Cpath d='M12 19c-4-2-6-6-5-11 5-1 9 1 10 6 .7 3.6-2 6-5 5z' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M9.5 14c2-2.7 4-4 6-6' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="budgets">
+
+<header id="shell-mobile-topbar" class="mobile-topbar"></header>
+
+<div class="app">
+  <aside id="shell-sidebar" class="sidebar"></aside>
+
+  <main class="main">
+    <div id="configBanner"></div>
+
+    <div class="topbar">
+      <div class="greeting">
+        <div class="eyebrow">Plan ahead</div>
+        <h1>Your <em>budgets</em> this month</h1>
+      </div>
+    </div>
+
+    <div class="cards-row" style="grid-template-columns:repeat(2,1fr);">
+      <div class="stat-card expense">
+        <div class="icon"><svg viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></div>
+        <div class="label">Spent this month</div>
+        <div class="value" id="statExpense">₹0</div>
+      </div>
+      <div class="stat-card budget">
+        <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg></div>
+        <div class="label">Budget remaining</div>
+        <div class="value" id="statBudgetRemaining">₹0</div>
+        <div class="sub" id="statBudgetSub">of ₹0 planned</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Budgets by category</h2>
+      <div class="panel-sub">Monthly limits you've set for yourself</div>
+      <div id="budgetsArea"></div>
+      <button class="panel-foot-link" onclick="openBudgetModal()">Edit budgets →</button>
+    </div>
+  </main>
+</div>
+
+<nav id="shell-bottom-nav" class="bottom-nav"></nav>
+
+<!-- Add/Edit transaction modal (FAB still works here) -->
+<div class="overlay" id="txOverlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeTxModal()"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3 id="txModalTitle">New entry</h3>
+    <div class="type-toggle">
+      <button id="toggleIncome" onclick="setTxType('income')">Income</button>
+      <button id="toggleExpense" onclick="setTxType('expense')">Expense</button>
+    </div>
+    <div class="field">
+      <label for="txAmount">Amount (₹)</label>
+      <input type="number" id="txAmount" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="field">
+      <label for="txCategory">Category</label>
+      <select id="txCategory"></select>
+    </div>
+    <div class="field">
+      <label for="txDate">Date</label>
+      <input type="date" id="txDate">
+    </div>
+    <div class="field">
+      <label for="txNote">Note (optional)</label>
+      <input type="text" id="txNote" placeholder="e.g. Weekly grocery run">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTxModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTx()">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Budget modal -->
+<div class="overlay" id="budgetOverlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeBudgetModal()"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3>Set monthly budgets</h3>
+    <div id="budgetFieldsArea"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBudgetModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBudgets()">Save budgets</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+async function renderBudgetsPage(){
+  const list = txForMonth(viewMonth);
+  const totals = computeTotals(list);
+  document.getElementById('statExpense').textContent = fmt(totals.expense);
+
+  const totalBudget = EXPENSE_CATS.reduce((s,c)=>s+(budgets[c]||0),0);
+  const budgetRemaining = totalBudget - totals.expense;
+  document.getElementById('statBudgetRemaining').textContent = fmt(Math.max(0,budgetRemaining));
+  document.getElementById('statBudgetRemaining').style.color = budgetRemaining<0 ? 'var(--danger)' : 'var(--ink)';
+  document.getElementById('statBudgetSub').textContent = totalBudget>0 ? `of ${fmt(totalBudget)} planned` : 'No budgets set yet';
+
+  renderBudgets(list);
+}
+async function onMonthChanged(){ await renderBudgetsPage(); }
+async function onDataChanged(){ await renderBudgetsPage(); }
+
+(async function init(){
+  buildShell('budgets');
+  renderConfigBannerIfNeeded();
+  await loadAllData();
+  await renderBudgetsPage();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Expense Diary">
+<meta name="theme-color" content="#164F3A">
+<title>Transactions · Jomin and Malu Expense Diary</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231E6B4E'/%3E%3Cpath d='M12 19c-4-2-6-6-5-11 5-1 9 1 10 6 .7 3.6-2 6-5 5z' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M9.5 14c2-2.7 4-4 6-6' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="transactions">
+
+<header id="shell-mobile-topbar" class="mobile-topbar"></header>
+
+<div class="app">
+  <aside id="shell-sidebar" class="sidebar"></aside>
+
+  <main class="main">
+    <div id="configBanner"></div>
+
+    <div class="topbar">
+      <div class="greeting">
+        <div class="eyebrow">Every rupee, logged</div>
+        <h1><em>All entries</em> this month</h1>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Transactions</h2>
+      <div class="panel-sub">Everything logged this month</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Category</th><th>Date</th><th>Note</th><th style="text-align:right;">Amount</th><th></th></tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+      </div>
+      <div id="txEmpty" class="empty-note" style="display:none;">Your diary is empty for this month — add your first entry to start tracking.</div>
+    </div>
+  </main>
+</div>
+
+<nav id="shell-bottom-nav" class="bottom-nav"></nav>
+
+<!-- Add/Edit transaction modal -->
+<div class="overlay" id="txOverlay">
+  <div class="modal">
+    <button class="close-x" onclick="closeTxModal()"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <h3 id="txModalTitle">New entry</h3>
+    <div class="type-toggle">
+      <button id="toggleIncome" onclick="setTxType('income')">Income</button>
+      <button id="toggleExpense" onclick="setTxType('expense')">Expense</button>
+    </div>
+    <div class="field">
+      <label for="txAmount">Amount (₹)</label>
+      <input type="number" id="txAmount" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="field">
+      <label for="txCategory">Category</label>
+      <select id="txCategory"></select>
+    </div>
+    <div class="field">
+      <label for="txDate">Date</label>
+      <input type="date" id="txDate">
+    </div>
+    <div class="field">
+      <label for="txNote">Note (optional)</label>
+      <input type="text" id="txNote" placeholder="e.g. Weekly grocery run">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTxModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTx()">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script>
+async function renderTransactionsPage(){
+  const list = txForMonth(viewMonth);
+  renderTable(list);
+}
+async function onMonthChanged(){ await renderTransactionsPage(); }
+async function onDataChanged(){ await renderTransactionsPage(); }
+
+(async function init(){
+  buildShell('transactions');
+  renderConfigBannerIfNeeded();
+  await loadAllData();
+  await renderTransactionsPage();
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('add')==='1') openTxModal();
+})();
+</script>
+</body>
+</html>
