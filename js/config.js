@@ -5,4 +5,4 @@
    3. Copy the "Project URL" and the "anon public" key below.
    ============================================================ */
 window.SUPABASE_URL = "https://cplvlapufjcajtgorkqy.supabase.co";
-window.SUPABASE_ANON_KEY = "sb_publishable_gX6SZr5EPeAlpAG4g1jJug_hNQOiFX1";
+window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwbHZsYXB1ZmpjYWp0Z29ya3F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4OTExMjksImV4cCI6MjA5ODQ2NzEyOX0.4lNlXFmjJliPLk5zpUBJrAScFGiSWbMYvHegiGT_N_U";
